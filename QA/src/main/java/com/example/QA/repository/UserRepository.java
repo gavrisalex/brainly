@@ -7,9 +7,12 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface UserRepository extends JpaRepository<User,Integer> {
+public interface UserRepository extends JpaRepository<User, Integer> {
     boolean existsByName(String name);
+
     boolean existsByEmail(String email);
+
+    String test;
 
     User findByName(String name);
 }
