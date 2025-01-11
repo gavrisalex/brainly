@@ -1,4 +1,4 @@
 package com.example.QA.service.question;
 
-public class QuestionService {
+public interface QuestionService {
 }

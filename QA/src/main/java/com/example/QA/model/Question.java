@@ -32,7 +32,7 @@ public class Question {
     private String content;
 
     @Column(nullable = false)
-    private Date date;
+    private Date postedOn;
     private Status status;
     private Visibility visibility;
     private int approvedSolution;
@@ -70,11 +70,11 @@ public class Question {
     }
 
     public Date getDate() {
-        return date;
+        return postedOn;
     }
 
     public void setDate(Date date) {
-        this.date = date;
+        this.postedOn = date;
     }
 
     public Status getStatus() {
