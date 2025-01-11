@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
@@ -26,14 +26,15 @@ public class UserServiceImpl implements UserService{
     @Autowired
     JWTService jwtService;
 
-    private BCryptPasswordEncoder encoder=new BCryptPasswordEncoder(12);
+    private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
+
     @Override
     public User saveUser(User user) {
 
-        if(userRepository.existsByEmail(user.getEmail()))
+        if (userRepository.existsByEmail(user.getEmail()))
             throw new EmailAlreadyExistsException("Email already exists!");
 
-        if(userRepository.existsByName(user.getName()))
+        if (userRepository.existsByName(user.getName()))
             throw new NameAlreadyExistsException("Name already exists!");
 
         user.setPassword(encoder.encode(user.getPassword()));
@@ -47,11 +48,21 @@ public class UserServiceImpl implements UserService{
 
     @Override
     public String verify(User user) {
-        Authentication authentication=authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getName(),user.getPassword()));
-        if(authentication.isAuthenticated())
+        Authentication authentication = authenticationManager
+                .authenticate(new UsernamePasswordAuthenticationToken(user.getName(), user.getPassword()));
+        if (authentication.isAuthenticated())
             return jwtService.generateToken(user.getName());
 
         return "User not logged in!";
     }
+
+    @Override
+    public void assignRole(int userId, User.Role role) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        user.setRole(role);
+        userRepository.save(user);
+    }
+
 
 }

@@ -8,6 +8,7 @@ import java.util.Date;
 public class Response {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int response_id;
 
     @ManyToOne
@@ -25,6 +26,12 @@ public class Response {
 
     private int nrOfVotes;
 
+    public enum Solution {
+        NO,
+        YES
+    }
+
+    private Solution solution;
 
     public int getResponse_id() {
         return response_id;
@@ -72,5 +79,13 @@ public class Response {
 
     public void setNrOfVotes(int nrOfVotes) {
         this.nrOfVotes = nrOfVotes;
+    }
+
+    public Solution getSolution() {
+        return solution;
+    }
+
+    public void setSolution(Solution solution) {
+        this.solution = solution;
     }
 }

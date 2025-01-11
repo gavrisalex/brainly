@@ -8,7 +8,7 @@ import jakarta.persistence.Id;
 @Entity
 public class User {
 
-    enum Role{
+    public enum Role{
         USER,MOD,ADMIN
     }
 

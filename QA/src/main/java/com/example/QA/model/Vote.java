@@ -1,14 +1,12 @@
 package com.example.QA.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 
 @Entity
 public class Vote {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int vote_id;
 
     @ManyToOne

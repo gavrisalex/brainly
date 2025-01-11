@@ -7,31 +7,33 @@ import java.util.Date;
 @Entity
 public class Question {
 
-    enum Visibility {
+    public enum Visibility {
         VISIBLE,
         HIDDEN
     }
 
-    enum Status {
+    public enum Status {
+        PENDING,
         ACCEPTED,
         DENIED
     }
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int question_id;
 
     @ManyToOne
-    @JoinColumn(name = "id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "topic_id", nullable = false)
-    private User topic;
+    private Topic topic;
 
     @Column(nullable = false)
     private String content;
 
-    @Column(nullable = false)
+    @Column(name = "date", nullable = false)
     private Date postedOn;
     private Status status;
     private Visibility visibility;
@@ -53,11 +55,11 @@ public class Question {
         this.user = user;
     }
 
-    public User getTopic() {
+    public Topic getTopic() {
         return topic;
     }
 
-    public void setTopic(User topic) {
+    public void setTopic(Topic topic) {
         this.topic = topic;
     }
 
@@ -69,12 +71,12 @@ public class Question {
         this.content = content;
     }
 
-    public Date getDate() {
+    public Date getPostedOn() {
         return postedOn;
     }
 
-    public void setDate(Date date) {
-        this.postedOn = date;
+    public void setPostedOn(Date postedOn) {
+        this.postedOn = postedOn;
     }
 
     public Status getStatus() {

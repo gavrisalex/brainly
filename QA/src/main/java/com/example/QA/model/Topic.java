@@ -1,23 +1,22 @@
 package com.example.QA.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.ForeignKey;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
 public class Topic {
 
     @Id
-    private int topic_id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int id_topic;
 
     private String name;
 
     public int getTopic_id() {
-        return topic_id;
+        return id_topic;
     }
 
     public void setTopic_id(int topic_id) {
-        this.topic_id = topic_id;
+        this.id_topic = topic_id;
     }
 
     public String getName() {
