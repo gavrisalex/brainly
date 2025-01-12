@@ -70,4 +70,20 @@ public class VoteServiceImpl implements VoteService {
 
         return totalVotes > 0 ? ((double) positiveVotes / totalVotes) * 100 : 0;
     }
+
+    @Override
+    public Optional<Vote> getUserVoteForResponse(int responseId, int userId) {
+        return voteRepository.findByResponseIdAndUserId(responseId, userId);
+    }
+
+    public Response findByIdWithUserVote(int responseId, int userId) {
+        Response response = responseService.findById(responseId);
+        Optional<Vote> userVote = getUserVoteForResponse(responseId, userId);
+
+        userVote.ifPresent(vote -> {
+            response.setUserVote(vote.getTypeOfVote());
+        });
+
+        return response;
+    }
 }

@@ -1,6 +1,5 @@
 package com.example.QA.controller;
 
-
 import com.example.QA.controller.common.ApiResponse;
 import com.example.QA.exceptions.user.EmailAlreadyExistsException;
 import com.example.QA.exceptions.user.NameAlreadyExistsException;
@@ -27,11 +26,11 @@ public class TopicController {
     public ApiResponse<String> addTopic(
             @RequestHeader("Authorization") String token,
             @RequestBody Topic topic) {
-        //System.out.println("Token received: " + token);
+        // System.out.println("Token received: " + token);
         boolean isAdmin = userDetailsService.isAdmin(token);
-       // System.out.println("Is admin: " + isAdmin);
+        // System.out.println("Is admin: " + isAdmin);
 
-        if(isAdmin) {
+        if (isAdmin) {
             try {
                 topicService.saveTopic(topic);
                 return new ApiResponse<>(true, "New topic added", null);
@@ -41,6 +40,14 @@ public class TopicController {
         }
         return new ApiResponse<>(false, null, "Only administrators can add topics!");
     }
+
     @GetMapping("/getAll")
-    public List<Topic> getAllTopics(){return topicService.getAllTopics();}
+    public ApiResponse<List<Topic>> getAllTopics() {
+        try {
+            List<Topic> topics = topicService.getAllTopics();
+            return new ApiResponse<>(true, topics, null);
+        } catch (Exception e) {
+            return new ApiResponse<>(false, null, "Failed to fetch topics: " + e.getMessage());
+        }
+    }
 }

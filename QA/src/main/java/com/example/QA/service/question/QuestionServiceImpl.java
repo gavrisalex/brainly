@@ -44,7 +44,7 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public Question findById(int id) {
         return questionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Question not found with id: " + id));
+                .orElseThrow(() -> new RuntimeException("Question not found with id: " + id));
     }
 
     @Override
@@ -105,14 +105,14 @@ public class QuestionServiceImpl implements QuestionService {
 
         boolean isOwner = question.getUser().getId() == user.getId();
         boolean isAdmin = user.getRole() == User.Role.ADMIN;
-        boolean isDenied= question.getStatus() == Question.Status.DENIED;
-        boolean isPending=question.getStatus() == Question.Status.PENDING;
+        boolean isDenied = question.getStatus() == Question.Status.DENIED;
+        boolean isPending = question.getStatus() == Question.Status.PENDING;
 
         if (!isOwner && !isAdmin) {
             throw new IllegalArgumentException("Only the question owner or an admin can modify question visibility");
         }
 
-        if(isDenied || isPending)
+        if (isDenied || isPending)
             throw new IllegalArgumentException("The question is not approved so therefore can't be made visible");
 
         if (question.getVisibility() == Question.Visibility.VISIBLE) {
@@ -122,5 +122,15 @@ public class QuestionServiceImpl implements QuestionService {
         }
 
         return questionRepository.save(question);
+    }
+
+    @Override
+    public List<Question> findAcceptedAndVisibleQuestions() {
+        return questionRepository.findAcceptedAndVisibleQuestions();
+    }
+
+    @Override
+    public Page<Question> findByUserId(int userId, Pageable pageable) {
+        return questionRepository.findByUserId(userId, pageable);
     }
 }

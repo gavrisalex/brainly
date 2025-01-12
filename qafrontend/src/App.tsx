@@ -1,26 +1,65 @@
-import React, { ReactNode, useState } from "react";
-//import { ProfileForm } from "./formComponent";
-import { Button } from "./components/ui/button";
-import { ProfileForm } from "./ProfileForm";
-import { Toaster } from "./components/ui/toaster";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { RootLayout } from "./components/RootLayout";
+import { Home } from "./pages/Home";
 import { LoginForm } from "./LoginForm";
-function App() {
-  return (
-    <>
-      <Toaster />
-      <div className="flex flex-row justify-around">
-        <div className="flex flex-col justify-center items-center h-screen">
-          <div className="mb-4 text-xl font-bold">Creeaza Cont</div>
-          <ProfileForm></ProfileForm>
-        </div>
+import { ProfileForm } from "./ProfileForm";
+import { Dashboard } from "./pages/Dashboard";
+import { ErrorBoundary } from "./components/ErrorBoundary";
+import { AddQuestion } from "./pages/AddQuestion";
+import { QuestionDetail } from "./pages/QuestionDetail";
+import { Profile } from "./pages/Profile";
 
-        <div className="flex flex-col justify-center items-center h-screen">
-          <div className="mb-4 text-xl font-bold">Login</div>
-          <LoginForm></LoginForm>
-        </div>
-      </div>
-    </>
-  );
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <RootLayout />,
+    errorElement: <ErrorBoundary />,
+    children: [
+      {
+        index: true,
+        element: <Home />,
+      },
+      {
+        path: "login",
+        element: (
+          <div className="flex flex-col justify-center items-center h-screen">
+            <div className="mb-4 text-xl font-bold">Login</div>
+            <LoginForm />
+          </div>
+        ),
+      },
+      {
+        path: "register",
+        element: (
+          <div className="flex flex-col justify-center items-center h-screen">
+            <div className="mb-4 text-xl font-bold">Create Account</div>
+            <ProfileForm />
+          </div>
+        ),
+      },
+      {
+        path: "dashboard",
+        element: <Dashboard />,
+        errorElement: <ErrorBoundary />,
+      },
+      {
+        path: "ask",
+        element: <AddQuestion />,
+      },
+      {
+        path: "/question/:id",
+        element: <QuestionDetail />,
+      },
+      {
+        path: "/profile",
+        element: <Profile />,
+      },
+    ],
+  },
+]);
+
+function App() {
+  return <RouterProvider router={router} />;
 }
 
 export default App;

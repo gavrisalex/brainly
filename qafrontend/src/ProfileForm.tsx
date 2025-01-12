@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -48,6 +49,7 @@ export function ProfileForm() {
   const { toast } = useToast();
   const [usernameValid, setUsernameValid] = useState("");
   const [emailValid, setEmailValid] = useState("");
+  const navigate = useNavigate();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     let name = values.username;
@@ -61,7 +63,13 @@ export function ProfileForm() {
         data: { success, data, error },
       } = await axios.post("http://localhost:8080/user/add", user);
 
-      if (!success && error) {
+      if (success) {
+        toast({
+          title: "Success",
+          description: "Account created successfully",
+        });
+        navigate("/login"); // Navigate to login after successful registration
+      } else if (error) {
         toast({
           title: "Error",
           description: error,
@@ -70,6 +78,11 @@ export function ProfileForm() {
       }
     } catch (error) {
       console.error(error);
+      toast({
+        title: "Error",
+        description: "An error occurred during registration",
+        variant: "destructive",
+      });
     }
   }
 

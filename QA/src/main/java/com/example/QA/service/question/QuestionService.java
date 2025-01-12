@@ -21,4 +21,8 @@ public interface QuestionService {
     List<Question> findSimilarQuestions(String content, int topicId);
 
     Question updateQuestionVisibility(int id, User user);
+
+    List<Question> findAcceptedAndVisibleQuestions();
+
+    Page<Question> findByUserId(int userId, Pageable pageable);
 }

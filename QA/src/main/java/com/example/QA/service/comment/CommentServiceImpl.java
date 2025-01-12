@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
+import java.util.List;
 import java.util.Date;
 
 @Service
@@ -43,5 +43,10 @@ public class CommentServiceImpl implements CommentService {
     @Override
     public Page<Comment> findAll(Pageable pageable) {
         return commentRepository.findAll(pageable);
+    }
+
+    @Override
+    public List<Comment> findByResponseId(int responseId) {
+        return commentRepository.findByResponseResponseId(responseId);
     }
 }

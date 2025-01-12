@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useNavigate } from "react-router-dom";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +21,9 @@ import { useState } from "react";
 import { useToast } from "./hooks/use-toast";
 
 const formSchema = z.object({
-  email: z.string().email("Email invalid"),
+  name: z.string().min(2, {
+    message: "Username must be at least 2 characters.",
+  }),
   password: z.string(),
 });
 
@@ -28,25 +31,32 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      name: "",
       password: "",
     },
   });
   const { toast } = useToast();
-  const [usernameValid, setUsernameValid] = useState("");
-  const [emailValid, setEmailValid] = useState("");
+  const navigate = useNavigate();
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    let email = values.email;
+    let name = values.name;
     let password = values.password;
-    const user = { email, password };
+    const user = { name, password };
 
-    /*try {
+    try {
       const {
-        data: { success, data, error },
-      } = await axios.post("http://localhost:8080/user/add", user);
+        data: { success, data: token, error },
+      } = await axios.post("http://localhost:8080/user/login", user);
 
-      if (!success && error) {
+      if (success) {
+        localStorage.setItem("token", token);
+
+        toast({
+          title: "Success",
+          description: "Logged in successfully",
+        });
+        navigate("/dashboard");
+      } else if (error) {
         toast({
           title: "Error",
           description: error,
@@ -55,28 +65,29 @@ export function LoginForm() {
       }
     } catch (error) {
       console.error(error);
-    }*/
-    console.log(email + " " + password);
+      toast({
+        title: "Error",
+        description: "An error occurred during login",
+        variant: "destructive",
+      });
+    }
   }
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="flex flex-col justify-center items-center space-y-8 max-w-64 "
+        className="flex flex-col justify-center items-center space-y-8 max-w-64"
       >
         <FormField
           control={form.control}
-          name="email"
+          name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Email</FormLabel>
+              <FormLabel>Username</FormLabel>
               <FormControl>
-                <Input type="email" placeholder="" {...field} />
+                <Input placeholder="Enter your username" {...field} />
               </FormControl>
-              <FormDescription className="text-red-500">
-                {emailValid}
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -88,13 +99,17 @@ export function LoginForm() {
             <FormItem>
               <FormLabel>Password</FormLabel>
               <FormControl>
-                <Input type="password" placeholder="" {...field} />
+                <Input
+                  type="password"
+                  placeholder="Enter your password"
+                  {...field}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit">Login</Button>
       </form>
     </Form>
   );

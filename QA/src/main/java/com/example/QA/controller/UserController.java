@@ -1,11 +1,13 @@
 package com.example.QA.controller;
 
 import com.example.QA.controller.common.ApiResponse;
+import com.example.QA.dto.UserDTO;
 import com.example.QA.exceptions.user.EmailAlreadyExistsException;
 import com.example.QA.exceptions.user.NameAlreadyExistsException;
 import com.example.QA.model.User;
 import com.example.QA.service.MyUserDetailsService;
 import com.example.QA.service.user.UserService;
+import com.example.QA.service.vote.VoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,6 +23,9 @@ public class UserController {
 
     @Autowired
     private MyUserDetailsService userDetailsService;
+
+    @Autowired
+    private VoteService voteService;
 
     @PostMapping("/add")
     public ApiResponse<String> add(@RequestBody User user) {
@@ -69,6 +74,22 @@ public class UserController {
     @PostMapping("/test")
     public String test() {
         return "TEST SUCCESS";
+    }
+
+    @GetMapping("/current")
+    public ApiResponse<UserDTO> getCurrentUser(@RequestHeader("Authorization") String token) {
+        try {
+            User user = userDetailsService.getUserFromToken(token);
+            UserDTO userDTO = new UserDTO(
+                    user.getId(),
+                    user.getName(),
+                    user.getEmail(),
+                    user.getRole(),
+                    user.getCredibility());
+            return new ApiResponse<>(true, userDTO, null);
+        } catch (Exception e) {
+            return new ApiResponse<>(false, null, "Failed to get current user: " + e.getMessage());
+        }
     }
 
 }

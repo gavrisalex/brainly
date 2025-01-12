@@ -33,6 +33,9 @@ public class Response {
 
     private Solution solution;
 
+    @Transient
+    private Vote.TypeOfVote userVote;
+
     public int getResponse_id() {
         return response_id;
     }
@@ -87,5 +90,13 @@ public class Response {
 
     public void setSolution(Solution solution) {
         this.solution = solution;
+    }
+
+    public Vote.TypeOfVote getUserVote() {
+        return userVote;
+    }
+
+    public void setUserVote(Vote.TypeOfVote userVote) {
+        this.userVote = userVote;
     }
 }

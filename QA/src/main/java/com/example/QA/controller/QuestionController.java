@@ -1,6 +1,7 @@
 package com.example.QA.controller;
 
 import com.example.QA.controller.common.ApiResponse;
+import com.example.QA.mail.JavaSmtpGmailSenderApplication;
 import com.example.QA.model.Question;
 import com.example.QA.service.MyUserDetailsService;
 import com.example.QA.service.question.QuestionService;
@@ -10,6 +11,7 @@ import com.example.QA.repository.TopicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -37,6 +39,9 @@ public class QuestionController {
     @Autowired
     private TopicRepository topicRepository;
 
+    @Autowired
+    private JavaSmtpGmailSenderApplication  javaSmtpGmailSenderApplication;
+
     @PostMapping("/add")
     public ApiResponse<?> addQuestion(
             @RequestHeader("Authorization") String token,
@@ -54,6 +59,7 @@ public class QuestionController {
             question.setTopic(topic);
 
             Question newQuestion = questionService.addQuestion(question);
+            //javaSmtpGmailSenderApplication.sendMail("");
             return new ApiResponse<>(true, newQuestion, null);
         } catch (IllegalArgumentException e) {
             return new ApiResponse<>(false, null, e.getMessage());
@@ -64,22 +70,12 @@ public class QuestionController {
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<?> getQuestionById(
-            @RequestHeader("Authorization") String token,
-            @PathVariable int id) {
+    public ApiResponse<Question> getQuestionById(@PathVariable int id) {
         try {
-            User user = userDetailsService.getUserFromToken(token);
-            if (user.getRole() != User.Role.MOD && user.getRole() != User.Role.ADMIN) {
-                throw new IllegalArgumentException("Only moderators can view and approve questions");
-            }
-
             Question question = questionService.findById(id);
             return new ApiResponse<>(true, question, null);
-        } catch (IllegalArgumentException e) {
-            return new ApiResponse<>(false, null, e.getMessage());
         } catch (Exception e) {
-            return new ApiResponse<>(false, null,
-                    "An error occurred while fetching the question: " + e.getMessage());
+            return new ApiResponse<>(false, null, "Question not found: " + e.getMessage());
         }
     }
 
@@ -143,6 +139,29 @@ public class QuestionController {
         } catch (Exception e) {
             return new ApiResponse<>(false, null,
                     "An error occurred while updating question visibility: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/accepted-visible")
+    public ApiResponse<?> getAcceptedAndVisibleQuestions() {
+        try {
+            List<Question> questions = questionService.findAcceptedAndVisibleQuestions();
+            return new ApiResponse<>(true, questions, null);
+        } catch (Exception e) {
+            return new ApiResponse<>(false, null, "An error occurred while fetching questions: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/user")
+    public ApiResponse<Page<Question>> getUserQuestions(
+            @RequestHeader("Authorization") String token,
+            Pageable pageable) {
+        try {
+            User currentUser = userDetailsService.getUserFromToken(token);
+            Page<Question> questions = questionService.findByUserId(currentUser.getId(), pageable);
+            return new ApiResponse<>(true, questions, null);
+        } catch (Exception e) {
+            return new ApiResponse<>(false, null, "Failed to fetch user questions: " + e.getMessage());
         }
     }
 }

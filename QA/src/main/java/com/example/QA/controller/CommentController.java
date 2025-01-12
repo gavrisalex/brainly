@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/comment")
@@ -56,6 +59,16 @@ public class CommentController {
         } catch (Exception e) {
             return new ApiResponse<>(false, null,
                     "An error occurred while fetching comments: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/response/{responseId}")
+    public ApiResponse<List<Comment>> getCommentsByResponseId(@PathVariable int responseId) {
+        try {
+            List<Comment> comments = commentService.findByResponseId(responseId);
+            return new ApiResponse<>(true, comments, null);
+        } catch (Exception e) {
+            return new ApiResponse<>(false, null, "Failed to fetch comments: " + e.getMessage());
         }
     }
 }

@@ -3,11 +3,14 @@ package com.example.QA.controller;
 import com.example.QA.controller.common.ApiResponse;
 import com.example.QA.model.Response;
 import com.example.QA.model.User;
+import com.example.QA.model.Vote;
 import com.example.QA.service.MyUserDetailsService;
 import com.example.QA.service.response.ResponseService;
+import com.example.QA.service.vote.VoteService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/response")
@@ -29,6 +33,9 @@ public class ResponseController {
 
     @Autowired
     private MyUserDetailsService userDetailsService;
+
+    @Autowired
+    private VoteService voteService;
 
     @PostMapping("/add")
     public ApiResponse<?> addResponse(
@@ -48,16 +55,27 @@ public class ResponseController {
         }
     }
 
-    @GetMapping("getAll")
-    public ApiResponse<?> getAllResponses(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+    @GetMapping("/getAll")
+    public ApiResponse<Page<Response>> getAllResponses(
+            @RequestHeader("Authorization") String token,
+            Pageable pageable) {
         try {
-            Page<Response> responses = responseService.findAll(PageRequest.of(page, size));
+            User currentUser = userDetailsService.getUserFromToken(token);
+            Page<Response> responses = responseService.findAll(pageable);
+
+            // Add user vote information to each response
+            responses.getContent().forEach(response -> {
+                Optional<Vote> userVote = voteService.getUserVoteForResponse(
+                        response.getResponse_id(),
+                        currentUser.getId());
+                userVote.ifPresent(vote -> {
+                    response.setUserVote(vote.getTypeOfVote());
+                });
+            });
+
             return new ApiResponse<>(true, responses, null);
         } catch (Exception e) {
-            return new ApiResponse<>(false, null,
-                    "An error occurred while fetching responses: " + e.getMessage());
+            return new ApiResponse<>(false, null, "Failed to fetch responses: " + e.getMessage());
         }
     }
 
