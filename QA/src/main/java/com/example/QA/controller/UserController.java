@@ -55,7 +55,6 @@ public class UserController {
             @RequestParam int userId,
             @RequestParam User.Role role) {
         try {
-            // First verify if the requesting user is an admin
             if (!userDetailsService.isAdmin(token)) {
                 return new ApiResponse<>(false, null, "Unauthorized: Only administrators can assign roles");
             }

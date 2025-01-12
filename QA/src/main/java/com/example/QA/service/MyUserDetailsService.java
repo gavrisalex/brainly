@@ -31,16 +31,13 @@ public class MyUserDetailsService implements UserDetailsService {
 
     }
     public boolean isAdmin(String token) {
-        // Decode the token to get the user
         User user = getUserFromToken(token);
-        // Check if the user has ADMIN role
         return user != null && user.getRole() == User.Role.ADMIN;
     }
-
     public User getUserFromToken(String token) {
-        // Remove "Bearer " if present
+
         String actualToken = token.startsWith("Bearer ") ? token.substring(7) : token;
-        // Use your JWT service or token service to decode and get the user
+
         return userRepository.findByName(jwtService.extractUserName(actualToken));
     }
 }

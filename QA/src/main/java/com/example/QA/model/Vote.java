@@ -3,6 +3,9 @@ package com.example.QA.model;
 import jakarta.persistence.*;
 
 @Entity
+@Table(uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "response_id", "id" })
+})
 public class Vote {
 
     @Id
@@ -17,7 +20,7 @@ public class Vote {
     @JoinColumn(name = "id", nullable = false)
     private User user;
 
-    enum TypeOfVote{
+    public enum TypeOfVote {
         LIKE,
         DISLIKE
     }

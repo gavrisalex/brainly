@@ -24,16 +24,21 @@ public class TopicController {
     MyUserDetailsService userDetailsService;
 
     @PostMapping("/add")
-    public ApiResponse<String> addTopic(@RequestHeader("Authorization") String token,
-            @RequestBody Topic topic)
-    {
-        if(userDetailsService.isAdmin(token))
+    public ApiResponse<String> addTopic(
+            @RequestHeader("Authorization") String token,
+            @RequestBody Topic topic) {
+        //System.out.println("Token received: " + token);
+        boolean isAdmin = userDetailsService.isAdmin(token);
+       // System.out.println("Is admin: " + isAdmin);
+
+        if(isAdmin) {
             try {
-            topicService.saveTopic(topic);
-            return new ApiResponse<>(true, "New topic added", null);
-             } catch (NameAlreadyExistsException e) {
-            return new ApiResponse<>(false, null, e.getMessage());
+                topicService.saveTopic(topic);
+                return new ApiResponse<>(true, "New topic added", null);
+            } catch (NameAlreadyExistsException e) {
+                return new ApiResponse<>(false, null, e.getMessage());
             }
+        }
         return new ApiResponse<>(false, null, "Only administrators can add topics!");
     }
     @GetMapping("/getAll")

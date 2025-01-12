@@ -43,7 +43,6 @@ public class ModeratorTopicController {
         } catch (IllegalArgumentException e) {
             return new ApiResponse<>(false, null, e.getMessage());
         } catch (Exception e) {
-            // Handle any other unexpected errors
             return new ApiResponse<>(false, null,
                     "An error occurred while assigning the topic to the moderator: " + e.getMessage());
         }

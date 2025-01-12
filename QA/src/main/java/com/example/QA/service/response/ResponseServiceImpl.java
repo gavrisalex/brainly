@@ -11,6 +11,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class ResponseServiceImpl implements ResponseService {
@@ -85,5 +86,10 @@ public class ResponseServiceImpl implements ResponseService {
     public Response findById(int id) {
         return responseRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Response not found with id: " + id));
+    }
+
+    @Override
+    public List<Response> findByUserId(int userId) {
+        return responseRepository.findByUserId(userId);
     }
 }
