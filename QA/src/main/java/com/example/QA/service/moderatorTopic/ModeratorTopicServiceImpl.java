@@ -42,6 +42,11 @@ public class ModeratorTopicServiceImpl implements ModeratorTopicService {
         Topic topic = topicRepository.findById(moderatorTopic.getTopic().getTopic_id())
                 .orElseThrow(() -> new IllegalArgumentException("Topic not found"));
 
+        List<ModeratorTopic> existingAssignments = moderatorTopicRepository.findByTopicId(topic.getTopic_id());
+        if (!existingAssignments.isEmpty()) {
+            throw new IllegalArgumentException("This topic is already assigned to another moderator");
+        }
+
         moderatorTopic.setUser(user);
         moderatorTopic.setTopic(topic);
 

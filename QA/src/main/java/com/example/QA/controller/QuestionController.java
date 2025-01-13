@@ -3,6 +3,7 @@ package com.example.QA.controller;
 import com.example.QA.controller.common.ApiResponse;
 import com.example.QA.mail.JavaSmtpGmailSenderApplication;
 import com.example.QA.model.Question;
+import com.example.QA.repository.ModeratorTopicRepository;
 import com.example.QA.service.MyUserDetailsService;
 import com.example.QA.service.question.QuestionService;
 import com.example.QA.model.User;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PutMapping;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/question")
@@ -40,7 +42,10 @@ public class QuestionController {
     private TopicRepository topicRepository;
 
     @Autowired
-    private JavaSmtpGmailSenderApplication  javaSmtpGmailSenderApplication;
+    private ModeratorTopicRepository moderatorTopicRepository;
+
+    @Autowired
+    private JavaSmtpGmailSenderApplication javaSmtpGmailSenderApplication;
 
     @PostMapping("/add")
     public ApiResponse<?> addQuestion(
@@ -59,7 +64,22 @@ public class QuestionController {
             question.setTopic(topic);
 
             Question newQuestion = questionService.addQuestion(question);
-            //javaSmtpGmailSenderApplication.sendMail("");
+
+            List<String> moderatorEmails = moderatorTopicRepository.findByTopicId(topic.getTopic_id())
+                    .stream()
+                    .map(modTopic -> modTopic.getUser().getEmail())
+                    .collect(Collectors.toList());
+
+            for (String email : moderatorEmails) {
+                javaSmtpGmailSenderApplication.sendMail(
+                        email,
+                        "New Question Pending Review",
+                        "A new question has been submitted in your topic area:\n\n" +
+                                "Content: " + question.getContent() + "\n" +
+                                "Topic: " + topic.getName() + "\n" +
+                                "Posted by: " + user.getName());
+            }
+
             return new ApiResponse<>(true, newQuestion, null);
         } catch (IllegalArgumentException e) {
             return new ApiResponse<>(false, null, e.getMessage());
@@ -162,6 +182,27 @@ public class QuestionController {
             return new ApiResponse<>(true, questions, null);
         } catch (Exception e) {
             return new ApiResponse<>(false, null, "Failed to fetch user questions: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/pending")
+    public ApiResponse<?> getPendingQuestions(@RequestHeader("Authorization") String token) {
+        try {
+            User user = userDetailsService.getUserFromToken(token);
+            if (user.getRole() != User.Role.MOD && user.getRole() != User.Role.ADMIN) {
+                throw new IllegalArgumentException("Only moderators can view pending questions");
+            }
+
+            List<Question> pendingQuestions;
+            if (user.getRole() == User.Role.ADMIN) {
+                pendingQuestions = questionService.findAllPendingQuestions();
+            } else {
+                pendingQuestions = questionService.findPendingQuestionsByModerator(user);
+            }
+
+            return new ApiResponse<>(true, pendingQuestions, null);
+        } catch (Exception e) {
+            return new ApiResponse<>(false, null, "Failed to fetch pending questions: " + e.getMessage());
         }
     }
 }

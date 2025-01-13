@@ -3,6 +3,7 @@ package com.example.QA.service.user;
 import com.example.QA.exceptions.user.EmailAlreadyExistsException;
 import com.example.QA.exceptions.user.NameAlreadyExistsException;
 import com.example.QA.model.User;
+import com.example.QA.repository.ModeratorTopicRepository;
 import com.example.QA.repository.UserRepository;
 import com.example.QA.service.jwt.JWTService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -19,6 +21,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private ModeratorTopicRepository modTopicRepository;
 
     @Autowired
     AuthenticationManager authenticationManager;
@@ -57,12 +62,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public void assignRole(int userId, User.Role role) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (user.getRole() == User.Role.MOD && role == User.Role.USER) {
+            modTopicRepository.deleteByUserId(userId);
+        }
+
         user.setRole(role);
         userRepository.save(user);
     }
-
 
 }

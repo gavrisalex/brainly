@@ -25,4 +25,8 @@ public interface QuestionService {
     List<Question> findAcceptedAndVisibleQuestions();
 
     Page<Question> findByUserId(int userId, Pageable pageable);
+
+    List<Question> findPendingQuestionsByModerator(User moderator);
+
+    List<Question> findAllPendingQuestions();
 }

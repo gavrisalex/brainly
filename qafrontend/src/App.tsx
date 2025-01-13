@@ -1,4 +1,4 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { createBrowserRouter, Outlet, RouterProvider } from "react-router-dom";
 import { RootLayout } from "./components/RootLayout";
 import { Home } from "./pages/Home";
 import { LoginForm } from "./LoginForm";
@@ -8,6 +8,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AddQuestion } from "./pages/AddQuestion";
 import { QuestionDetail } from "./pages/QuestionDetail";
 import { Profile } from "./pages/Profile";
+import { Navbar } from "./components/Navbar";
 
 const router = createBrowserRouter([
   {
@@ -38,21 +39,31 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "dashboard",
-        element: <Dashboard />,
-        errorElement: <ErrorBoundary />,
-      },
-      {
-        path: "ask",
-        element: <AddQuestion />,
-      },
-      {
-        path: "/question/:id",
-        element: <QuestionDetail />,
-      },
-      {
-        path: "/profile",
-        element: <Profile />,
+        element: (
+          <>
+            <Navbar />
+            <Outlet />
+          </>
+        ),
+        children: [
+          {
+            path: "dashboard",
+            element: <Dashboard />,
+            errorElement: <ErrorBoundary />,
+          },
+          {
+            path: "ask",
+            element: <AddQuestion />,
+          },
+          {
+            path: "/question/:id",
+            element: <QuestionDetail />,
+          },
+          {
+            path: "/profile",
+            element: <Profile />,
+          },
+        ],
       },
     ],
   },

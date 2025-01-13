@@ -21,9 +21,15 @@ public interface QuestionRepository extends JpaRepository<Question, Integer> {
             "LIMIT 5")
     List<Question> findSimilarQuestions(@Param("content") String content, @Param("topicId") int topicId);
 
-    @Query("SELECT q FROM Question q WHERE q.status = com.example.QA.model.Question.Status.ACCEPTED AND q.visibility = com.example.QA.model.Question.Visibility.VISIBLE")
+    @Query("SELECT q FROM Question q WHERE q.status = com.example.QA.model.Question.Status.ACCEPTED AND q.visibility = com.example.QA.model.Question.Visibility.VISIBLE ORDER BY q.postedOn DESC")
     List<Question> findAcceptedAndVisibleQuestions();
 
     @Query("SELECT q FROM Question q WHERE q.user.id = :userId")
     Page<Question> findByUserId(@Param("userId") int userId, Pageable pageable);
+
+    @Query("SELECT q FROM Question q WHERE q.status = com.example.QA.model.Question.Status.PENDING AND q.topic.id_topic IN :topicIds")
+    List<Question> findPendingQuestionsByTopics(@Param("topicIds") List<Integer> topicIds);
+
+    @Query("SELECT q FROM Question q WHERE q.status = com.example.QA.model.Question.Status.PENDING")
+    List<Question> findAllPendingQuestions();
 }

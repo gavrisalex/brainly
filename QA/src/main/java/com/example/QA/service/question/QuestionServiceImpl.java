@@ -3,6 +3,7 @@ package com.example.QA.service.question;
 import com.example.QA.model.Question;
 import com.example.QA.model.User;
 import com.example.QA.repository.QuestionRepository;
+import com.example.QA.repository.ModeratorTopicRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -14,12 +15,16 @@ import java.util.Set;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.stream.Collectors;
+import java.util.ArrayList;
 
 @Service
 public class QuestionServiceImpl implements QuestionService {
 
     @Autowired
     private QuestionRepository questionRepository;
+
+    @Autowired
+    private ModeratorTopicRepository moderatorTopicRepository;
 
     @Override
     public Question addQuestion(Question question) {
@@ -132,5 +137,26 @@ public class QuestionServiceImpl implements QuestionService {
     @Override
     public Page<Question> findByUserId(int userId, Pageable pageable) {
         return questionRepository.findByUserId(userId, pageable);
+    }
+
+    @Override
+    public List<Question> findAllPendingQuestions() {
+        return questionRepository.findAllPendingQuestions();
+    }
+
+    @Override
+    public List<Question> findPendingQuestionsByModerator(User moderator) {
+        // Get all topic IDs assigned to this moderator
+        List<Integer> modTopicIds = moderatorTopicRepository.findByUserId(moderator.getId())
+                .stream()
+                .map(modTopic -> modTopic.getTopic().getTopic_id())
+                .collect(Collectors.toList());
+
+        // If moderator has no assigned topics, return empty list
+        if (modTopicIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        return questionRepository.findPendingQuestionsByTopics(modTopicIds);
     }
 }
