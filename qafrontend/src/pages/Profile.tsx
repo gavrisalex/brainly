@@ -48,6 +48,10 @@ export function Profile() {
     []
   );
   const [isPendingQuestionsOpen, setIsPendingQuestionsOpen] = useState(true);
+  const [newTopicName, setNewTopicName] = useState("");
+  const [topicError, setTopicError] = useState<string | null>(null);
+  const [isTopicManagementOpen, setIsTopicManagementOpen] = useState(true);
+  const [topicSuccess, setTopicSuccess] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -147,9 +151,9 @@ export function Profile() {
           }
         );
 
-        // The response is directly an array of topics
-        if (Array.isArray(topicsResponse.data)) {
-          setTopics(topicsResponse.data);
+        // Update to handle the correct response structure
+        if (topicsResponse.data.success) {
+          setTopics(topicsResponse.data.data);
         }
       } catch (error) {
         console.error("Error fetching admin data:", error);
@@ -416,6 +420,62 @@ export function Profile() {
       }
     } catch (error) {
       console.error("Error updating question status:", error);
+    }
+  };
+
+  const handleAddTopic = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!newTopicName.trim()) {
+        setTopicError("Topic name cannot be empty");
+        return;
+      }
+
+      const response = await axios.post(
+        "http://localhost:8080/topic/add",
+        { name: newTopicName },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        }
+      );
+
+      if (response.data.success) {
+        // Show success message
+        setTopicSuccess("Topic added successfully!");
+        setTopicError(null);
+
+        // Refresh topics list
+        const topicsResponse = await axios.get(
+          "http://localhost:8080/topic/getAll",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            withCredentials: true,
+          }
+        );
+
+        // Update to handle the correct response structure
+        if (topicsResponse.data.success) {
+          setTopics(topicsResponse.data.data);
+        }
+
+        setNewTopicName("");
+
+        // Clear success message after 3 seconds
+        setTimeout(() => {
+          setTopicSuccess(null);
+        }, 3000);
+      }
+    } catch (error) {
+      console.error("Error adding topic:", error);
+      setTopicError("Failed to add topic");
+      setTopicSuccess(null);
     }
   };
 
@@ -705,6 +765,78 @@ export function Profile() {
             </div>
           </div>
         </div>
+      )}
+
+      {profile?.role === "ADMIN" && (
+        <>
+          <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <button
+              onClick={() => setIsTopicManagementOpen(!isTopicManagementOpen)}
+              className="w-full flex justify-between items-center text-xl font-bold mb-4 text-black bg-white p-2 rounded-lg"
+            >
+              <span>Topic Management ({topics.length} topics)</span>
+              <svg
+                className={`w-6 h-6 transform transition-transform ${
+                  isTopicManagementOpen ? "rotate-180" : ""
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+
+            {isTopicManagementOpen && (
+              <div className="space-y-4">
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newTopicName}
+                    onChange={(e) => setNewTopicName(e.target.value)}
+                    placeholder="Enter new topic name"
+                    className="flex-grow p-2 border rounded"
+                  />
+                  <button
+                    onClick={handleAddTopic}
+                    className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Add Topic
+                  </button>
+                </div>
+                {topicError && (
+                  <p className="text-red-500 text-sm">{topicError}</p>
+                )}
+                {topicSuccess && (
+                  <p className="text-green-500 text-sm">{topicSuccess}</p>
+                )}
+
+                <div className="mt-4">
+                  <h3 className="font-medium mb-2">Existing Topics:</h3>
+                  {topics.length === 0 ? (
+                    <p className="text-gray-500">No topics available</p>
+                  ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                      {topics.map((topic) => (
+                        <div
+                          key={topic.topic_id}
+                          className="p-2 bg-gray-100 rounded"
+                        >
+                          {topic.name}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </>
       )}
     </div>
   );
