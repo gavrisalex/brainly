@@ -62,7 +62,6 @@ export function Profile() {
           return;
         }
 
-        // Fetch user profile
         const profileResponse = await axios.get(
           "http://localhost:8080/user/current",
           {
@@ -78,7 +77,6 @@ export function Profile() {
           setProfile(profileResponse.data.data);
         }
 
-        // Fetch user's questions
         const questionsResponse = await axios.get(
           "http://localhost:8080/question/user",
           {
@@ -122,7 +120,6 @@ export function Profile() {
         const token = localStorage.getItem("token");
         if (!token || profile?.role !== "ADMIN") return;
 
-        // Fetch all users
         const usersResponse = await axios.get(
           "http://localhost:8080/user/getAll",
           {
@@ -134,12 +131,10 @@ export function Profile() {
           }
         );
 
-        // The response is directly an array of users
         if (Array.isArray(usersResponse.data)) {
           setUsers(usersResponse.data);
         }
 
-        // Fetch topics
         const topicsResponse = await axios.get(
           "http://localhost:8080/topic/getAll",
           {
@@ -151,7 +146,6 @@ export function Profile() {
           }
         );
 
-        // Update to handle the correct response structure
         if (topicsResponse.data.success) {
           setTopics(topicsResponse.data.data);
         }
@@ -195,7 +189,6 @@ export function Profile() {
     try {
       const token = localStorage.getItem("token");
 
-      // Toggle visibility
       const toggleResponse = await axios.put(
         `http://localhost:8080/question/${questionId}/visibility`,
         {},
@@ -209,7 +202,6 @@ export function Profile() {
       );
 
       if (toggleResponse.data.success) {
-        // Fetch updated question data
         const questionsResponse = await axios.get(
           "http://localhost:8080/question/user",
           {
@@ -273,14 +265,12 @@ export function Profile() {
       );
 
       if (response.data.success) {
-        // Update users list
         setUsers(
           users.map((user) =>
             user.id === userId ? { ...user, role: newRole } : user
           )
         );
 
-        // If changing to MOD, fetch topics and open modal
         if (newRole === "MOD") {
           try {
             console.log("Fetching topics...");
@@ -295,7 +285,6 @@ export function Profile() {
               }
             );
 
-            // Check for success and access the data property
             if (topicsResponse.data.success) {
               setTopics(topicsResponse.data.data);
             }
@@ -342,7 +331,6 @@ export function Profile() {
         setSelectedTopic(0);
         setModalError(null);
       } else {
-        // Extract the actual error message from the response
         const errorMessage =
           response.data.message ||
           response.data.error ||
@@ -350,7 +338,6 @@ export function Profile() {
         setModalError(errorMessage);
       }
     } catch (error: any) {
-      // Show the detailed error message from the response if available
       const errorMessage =
         error.response?.data?.message ||
         error.message ||
@@ -360,7 +347,6 @@ export function Profile() {
   };
 
   const handleModalClose = async () => {
-    // If there's a selected user, revert their role back to USER
     if (selectedUser) {
       try {
         const token = localStorage.getItem("token");
@@ -376,7 +362,6 @@ export function Profile() {
           }
         );
 
-        // Update users list to reflect the role change
         setUsers(
           users.map((user) =>
             user.id === selectedUser.id ? { ...user, role: "USER" } : user
@@ -387,7 +372,6 @@ export function Profile() {
       }
     }
 
-    // Clear modal state
     setIsModalOpen(false);
     setSelectedUser(null);
     setSelectedTopic(0);
@@ -413,7 +397,6 @@ export function Profile() {
       );
 
       if (response.data.success) {
-        // Remove the question from the pending list
         setPendingQuestions(
           pendingQuestions.filter((q) => q.question_id !== questionId)
         );
@@ -444,11 +427,9 @@ export function Profile() {
       );
 
       if (response.data.success) {
-        // Show success message
         setTopicSuccess("Topic added successfully!");
         setTopicError(null);
 
-        // Refresh topics list
         const topicsResponse = await axios.get(
           "http://localhost:8080/topic/getAll",
           {
@@ -460,14 +441,12 @@ export function Profile() {
           }
         );
 
-        // Update to handle the correct response structure
         if (topicsResponse.data.success) {
           setTopics(topicsResponse.data.data);
         }
 
         setNewTopicName("");
 
-        // Clear success message after 3 seconds
         setTimeout(() => {
           setTopicSuccess(null);
         }, 3000);
